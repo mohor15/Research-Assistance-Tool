@@ -1,0 +1,405 @@
+peers:
+
+  - name: JPMorgan Chase
+    domain: jpmorganchase.com
+    urls:
+      - https://www.jpmorganchase.com/newsroom
+    source_type: primary
+    priority: high
+
+  - name: Morgan Stanley
+    domain: morganstanley.com
+    urls:
+      - https://www.morganstanley.com/about-us-newsroom
+    source_type: primary
+    priority: high
+
+  - name: Bank of America
+    domain: bankofamerica.com
+    urls:
+      - https://newsroom.bankofamerica.com/content/newsroom/home.html
+    source_type: primary
+    priority: high
+
+  - name: Citi
+    domain: citigroup.com
+    urls:
+      - https://www.citigroup.com/global/news
+    source_type: primary
+    priority: high
+
+  - name: Wells Fargo
+    domain: wf.com
+    urls:
+      - https://newsroom.wf.com/overview/default.aspx
+    source_type: primary
+    priority: high
+
+  - name: HSBC
+    domain: hsbc.com
+    urls:
+      - https://www.hsbc.com/news-and-views/news/media-releases
+    source_type: primary
+    priority: high
+
+  - name: Lloyds Banking Group
+    domain: lloydsbankinggroup.com
+    urls:
+      - https://www.lloydsbankinggroup.com/media/press-releases.html
+    source_type: primary
+    priority: medium
+
+  - name: NatWest Group
+    domain: natwestgroup.com
+    # This hub page itself never yields real article links through the
+    # normal HTML-link discovery path (confirmed live: the article list
+    # loads entirely via a POST to an AEM content-hub JSON API, only once
+    # the filter widget's "Apply" control is used). The requested "AI &
+    # Data" section IS achieved -- see `retrieval.natwest_contenthub`,
+    # which calls that same confirmed API endpoint directly with the
+    # "Ai & data" theme tag pre-selected, wired in as an additive
+    # discovery path gated on this source's domain (`discovery.
+    # discover_candidates`). This URL is kept as the configured source
+    # page for display/attribution purposes; it is not what is crawled.
+    urls:
+      - https://www.natwestgroup.com/news-and-insights/news-room/press-releases.html
+    source_type: primary
+    priority: medium
+
+  - name: Deutsche Bank
+    domain: db.com
+    urls:
+      - https://www.db.com/media/news?language_id=1
+    source_type: primary
+    priority: high
+
+
+ai_providers:
+
+  - name: OpenAI
+    domain: openai.com
+    urls:
+      - https://openai.com/news/
+    source_type: primary
+    priority: high
+
+  - name: Anthropic
+    domain: anthropic.com
+    urls:
+      - https://www.anthropic.com/news
+    source_type: primary
+    priority: high
+
+  - name: Google DeepMind
+    domain: deepmind.google
+    urls:
+      - https://deepmind.google/discover/blog/
+    source_type: primary
+    priority: high
+
+  - name: Microsoft AI
+    domain: microsoft.com
+    urls:
+      - https://blogs.microsoft.com/ai/
+    source_type: primary
+    priority: high
+
+  - name: NVIDIA
+    domain: nvidia.com
+    urls:
+      - https://nvidianews.nvidia.com/
+    source_type: primary
+    priority: high
+
+  - name: Meta AI
+    domain: ai.meta.com
+    urls:
+      - https://ai.meta.com/blog/
+    source_type: primary
+    priority: medium
+
+  - name: Mistral AI
+    domain: mistral.ai
+    urls:
+      - https://mistral.ai/news/
+    source_type: primary
+    priority: medium
+
+  - name: Cohere
+    domain: cohere.com
+    urls:
+      - https://cohere.com/blog
+    source_type: primary
+    priority: medium
+
+
+analysts:
+
+  - name: McKinsey
+    domain: mckinsey.com
+    urls:
+      - https://www.mckinsey.com/capabilities/quantumblack/our-insights
+    source_type: primary
+    priority: high
+
+  - name: BCG
+    domain: bcg.com
+    urls:
+      - https://www.bcg.com/capabilities/artificial-intelligence/insights
+    source_type: primary
+    priority: high
+
+  - name: Deloitte
+    domain: deloitte.com
+    urls:
+      - https://www.deloitte.com/us/en/services/consulting/content/advancing-human-ai-collaboration.html
+    source_type: primary
+    priority: high
+
+  - name: KPMG
+    domain: kpmg.com
+    urls:
+      - https://kpmg.com/us/en/insights-by-topic/ai-insights.html
+    source_type: primary
+    priority: high
+
+  - name: PwC
+    domain: pwc.com
+    urls:
+      - https://www.pwc.com/us/en/tech-effect/ai-analytics.html
+    source_type: primary
+    priority: high
+
+
+secondary_sources:
+
+  - name: Reuters
+    domain: reuters.com
+    urls:
+      - https://www.reuters.com/technology/artificial-intelligence/
+    source_type: secondary
+    priority: high
+
+  - name: CNBC
+    domain: cnbc.com
+    urls:
+      - https://www.cnbc.com/ai-artificial-intelligence/
+      # 2026-10-15, user-reported coverage gap: "Bank earnings live
+      # updates" (.../2026/10/13/bank-earnings-live-updates.html, real,
+      # confirmed via live fetch -- datePublished 2026-10-13T08:59:01Z)
+      # was never discovered. Live-verified it is not linked from the AI
+      # hub above (it's general banking/earnings content, not AI-tagged),
+      # not in CNBC's own news sitemap, and the "CNBCsitemapAll*.xml"
+      # archive sitemaps are a dead end for recency (confirmed frozen at
+      # 2024 content, two years stale). This earnings hub DOES link it,
+      # alongside other real, dated, often AI-adjacent earnings coverage
+      # (TSMC's AI-boom sales record, Oracle's AI-cloud results) --
+      # exactly the "Q3 earnings etc." coverage originally reported
+      # missing. Handled by the existing generic hub-page link discovery
+      # (retrieval.discovery.discover_candidates), same as FT's second
+      # (Technology) URL above -- not a dedicated scraper.
+      - https://www.cnbc.com/earnings/
+    source_type: secondary
+    priority: high
+
+  - name: Bloomberg
+    domain: bloomberg.com
+    urls:
+      - https://www.bloomberg.com/ai
+    source_type: secondary
+    priority: high
+
+  - name: Financial Times
+    domain: ft.com
+    urls:
+      - https://www.ft.com/artificial-intelligence
+      # Technology section/landing page (category: Technology) -- additive
+      # discovery surface alongside the AI topic hub above, same source,
+      # same name. Handled by the existing generic hub-page link discovery
+      # (retrieval.discovery.discover_candidates: each configured URL is
+      # fetched and scanned for same-domain article-shaped links) -- this
+      # is not a dedicated FT scraper, and the section URL itself is never
+      # treated as an article (see discovery.py's own-URL exclusion). Real
+      # per-article publication dates come from the existing generic
+      # extraction metadata (<time>, JSON-LD, article:published_time, ...)
+      # in retrieval.extractor -- never fabricated, never derived from this
+      # section page's crawl time.
+      - https://www.ft.com/technology
+    source_type: secondary
+    priority: high
+    # Routes to the AI/Technology specialist (AgentName.AI_PRODUCT), not
+    # the generic FinancialNewsAgent -- see agents.router.ArticleRouter's
+    # research_domain-aware secondary-source case. FT's technology/AI
+    # coverage is specifically what the AI/Technology specialist's own
+    # prompt (ai_product_system.md) is tuned to judge.
+    research_domain: ai_technology
+    # Additive discovery via FT's own search (retrieval.ft_search): the AI
+    # topic hub page alone is a limited, HTTP-only-visible slice (ranked/
+    # truncated to max_candidates_per_source) and can miss relevant current
+    # articles. Terms are aligned with config/topics.yaml's existing AI +
+    # financial-services vocabulary (not duplicated wholesale) plus the
+    # cross-domain AI/finance phrases that vocabulary keeps as separate
+    # concepts. top_k_per_query is this crawler's own limit on how many
+    # search results to take per term -- unrelated to agents.top_k, which
+    # separately controls how many candidates reach the LLM.
+    search:
+      enabled: true
+      top_k_per_query: 5
+      search_terms:
+        - AI
+        - artificial intelligence
+        - generative AI
+        - AI agents
+        - fintech
+        - financial technology
+        - banking technology
+        - AI banking
+        - AI financial services
+        - AI capital markets
+        - AI trading
+        - AI investment
+        - AI asset management
+
+  - name: Barron's
+    domain: barrons.com
+    urls:
+      - https://www.barrons.com/topics/artificial-intelligence
+    source_type: secondary
+    priority: medium
+
+  - name: Wall Street Journal
+    domain: wsj.com
+    urls:
+      - https://www.wsj.com/tech/ai
+      # Official WSJ/Dow Jones RSS feed -- confirmed HTTP 200
+      # application/rss+xml (2026-10-04 live check). wsj.com's own pages
+      # return HTTP 401 to automated clients (confirmed anti-bot block, not
+      # a connectivity issue); this feed is WSJ's own publicly syndicated
+      # discovery channel and is not a paywall/anti-bot bypass of any kind.
+      - https://feeds.a.dj.com/rss/RSSWSJD.xml
+    source_type: secondary
+    priority: high
+
+  - name: TechCrunch
+    domain: techcrunch.com
+    urls:
+      - https://techcrunch.com/category/artificial-intelligence/
+    source_type: secondary
+    priority: medium
+
+  - name: The Information
+    domain: theinformation.com
+    urls:
+      - https://www.theinformation.com/
+    source_type: secondary
+    priority: medium
+
+  - name: PR Newswire
+    domain: prnewswire.com
+    urls:
+      # Forensic finding (run 8704470a4a623d72): the previous
+      # "...-artificial-intelligence-list/" URL links to 259+ other
+      # category/topic LISTING pages alongside its ~25 real releases, and a
+      # run can discover only those category pages if they happen to rank
+      # first. This page is PR Newswire's own topic index for AI releases
+      # specifically; discovery now also requires the release's own
+      # numeric-ID URL shape (see retrieval.discovery's
+      # `_is_pr_newswire_release_url`), so category/topic links from either
+      # page are rejected regardless of which page is configured here.
+      - https://www.prnewswire.com/news-releases/latest-news-topics/artificial-intelligence/
+    source_type: press_distribution
+    priority: medium
+    # Routes to the Startup/Funding specialist (AgentName.STARTUP), not the
+    # generic FinancialNewsAgent -- see agents.router.ArticleRouter's
+    # research_domain-aware secondary-source case. PR Newswire's own
+    # discovery page here is a listing of individual press releases (funding
+    # rounds, launches, partnerships, acquisitions); each release remains an
+    # independent candidate, never collapsed into "the whole feed".
+    research_domain: startup_funding
+
+  - name: Yahoo Finance
+    domain: finance.yahoo.com
+    urls:
+      # Live-confirmed: every page on this domain, including this one, is a
+      # client-side-rendered React shell whose plain HTML contains only nav
+      # links (dozens of "/topic/<x>/"-style category pages), never a real
+      # article -- real article links (e.g. ".../markets/stocks/article/
+      # tsmc-posts-record-profit-amid-extremely-robust-demand-for-ai-chips-
+      # <id>.html") only exist in the post-JS DOM. `retrieval.service`'s
+      # `_YAHOO_FINANCE_DOMAIN` override forces browser-rendered discovery
+      # for this domain unconditionally (the normal "zero candidates"
+      # fallback trigger never fires here, since the nav noise itself
+      # still counts as "candidates").
+      - https://finance.yahoo.com/topic/artificial-intelligence/
+    source_type: secondary
+    priority: high
+
+  - name: TradingView
+    domain: tradingview.com
+    urls:
+      # Live-confirmed: this page's plain HTML already lists 100+ real,
+      # individually dated syndicated wire articles (Dow Jones Newswires,
+      # Barron's, Business Wire, ...) at "/news/<id>:0-<slug>/" -- no
+      # browser rendering needed, unlike Yahoo Finance above.
+      - https://www.tradingview.com/news/
+    source_type: secondary
+    priority: high
+
+startups:
+
+  discovery:
+    enabled: true
+
+  categories:
+    - AI foundation models
+    - AI agents
+    - AI infrastructure
+    - AI security
+    - AI fintech
+    - financial AI
+    - AI research
+    - enterprise AI
+    - AI automation
+
+  funding_events:
+    - seed
+    - series_a
+    - series_b
+    - series_c
+    - growth
+    - strategic_investment
+
+  event_types:
+    - funding
+    - acquisition
+    - partnership
+    - product_launch
+    - model_release
+    - enterprise_deal
+    - strategic_initiative
+
+retrieval_policy:
+
+  primary_source_priority:
+    - official_press_release
+    - official_newsroom
+    - official_blog
+    - official_research
+    - official_product_page
+
+  secondary_source_priority:
+    - Reuters
+    - Bloomberg
+    - Financial Times
+    - Wall Street Journal
+    - CNBC
+    - Barron's
+    - TechCrunch
+    - Yahoo Finance
+    - TradingView
+
+  blocked_behavior:
+    paywall: do_not_bypass
+    authentication: do_not_bypass
+    robots_txt: respect
+    anti_bot: do_not_bypass

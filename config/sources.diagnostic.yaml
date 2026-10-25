@@ -1,0 +1,95 @@
+peers:
+
+  - name: JPMorgan Chase
+    domain: jpmorganchase.com
+    urls:
+      - https://www.jpmorganchase.com/newsroom
+    source_type: primary
+    priority: high
+
+  - name: Bank of America
+    domain: bankofamerica.com
+    urls:
+      - https://newsroom.bankofamerica.com/content/newsroom/home.html
+    source_type: primary
+    priority: high
+
+
+ai_providers:
+
+  - name: OpenAI
+    domain: openai.com
+    urls:
+      - https://openai.com/news/
+    source_type: primary
+    priority: high
+
+  - name: Anthropic
+    domain: anthropic.com
+    urls:
+      - https://www.anthropic.com/news
+    source_type: primary
+    priority: high
+
+
+analysts:
+
+  - name: BCG
+    domain: bcg.com
+    urls:
+      - https://www.bcg.com/capabilities/artificial-intelligence/insights
+    source_type: primary
+    priority: high
+
+
+secondary_sources: []
+
+startups:
+
+  discovery:
+    enabled: true
+
+  categories:
+    - AI foundation models
+    - AI agents
+    - AI infrastructure
+    - AI security
+    - AI fintech
+    - financial AI
+    - AI research
+    - enterprise AI
+    - AI automation
+
+  funding_events:
+    - seed
+    - series_a
+    - series_b
+    - series_c
+    - growth
+    - strategic_investment
+
+  event_types:
+    - funding
+    - acquisition
+    - partnership
+    - product_launch
+    - model_release
+    - enterprise_deal
+    - strategic_initiative
+
+retrieval_policy:
+
+  primary_source_priority:
+    - official_press_release
+    - official_newsroom
+    - official_blog
+    - official_research
+    - official_product_page
+
+  secondary_source_priority: []
+
+  blocked_behavior:
+    paywall: do_not_bypass
+    authentication: do_not_bypass
+    robots_txt: respect
+    anti_bot: do_not_bypass

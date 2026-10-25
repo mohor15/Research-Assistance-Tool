@@ -1,0 +1,227 @@
+# Single shared login gate for the Streamlit UI (not a multi-user system).
+# The password is NEVER configured here -- it is read only from the
+# APP_LOGIN_PASSWORD environment variable (see .env / config/loader.py::
+# load_app_login_password). `enabled: false` turns the gate off entirely.
+auth:
+  enabled: true
+  username: admin
+
+system:
+  timezone: Asia/Kolkata
+  llm:
+    provider: ollama
+    model: qwen2.5:3b
+    # `127.0.0.1`, not `localhost`: a direct forensic benchmark on this
+    # Windows machine measured ~2.1s of pure DNS/connection overhead per
+    # Ollama call when the literal string "localhost" is resolved (IPv6
+    # ::1 attempted first, then falling back to IPv4), vs. ~0.3-0.5s
+    # round-trip when the same request targets 127.0.0.1 directly. Ollama
+    # itself is unaffected either way -- this only removes a fixed,
+    # measured per-call tax that otherwise eats into the deep-analysis
+    # timeout budget for no benefit.
+    base_url: http://127.0.0.1:11434
+    # CPU-only local inference (no GPU on this machine) measured at ~7-10
+    # generation tokens/sec; a realistic ~11k-char article pushed a single
+    # call to ~90s in an isolated benchmark, with real production calls
+    # occasionally exceeding the previous 120s under system load. 150s
+    # gives headroom above that measured worst case (combined with the
+    # evidence-size cap in agents/base.py, which keeps most real calls much
+    # smaller) without inviting indefinitely long hangs.
+    timeout_seconds: 150
+
+research:
+  lookback_hours: 24
+  top_k_per_agent: 5
+  morning_digest_hour: 8
+  evening_digest_hour: 20
+  use_primary_sources_first: true
+  use_secondary_sources: true
+  # CURRENT mode's rolling scan window (management requirement: widen from
+  # 24h to 48h so more relevant articles are surfaced). Independent of
+  # `lookback_hours` above (a separate, wider article-history retention
+  # floor) and of morning_digest_hour/evening_digest_hour (unaffected).
+  # Revert to the original behavior by setting this back to 24.
+  current_window_hours: 48
+
+retrieval:
+  request_timeout_seconds: 20
+  max_retries: 3
+  retry_delay_seconds: 2
+  # Raised in step with current_window_hours (24->48h, doubling genuine
+  # per-source volume): confirmed via the 2026-10-14 live run's own
+  # discovery logs that the OLD caps (30/50) were silently truncating
+  # high-volume news sources under the wider window -- PR Newswire found
+  # 70 in-topic candidates but only kept 30 (40 never fetched), TechCrunch
+  # 89, The Information 93, Mistral AI 96, Deloitte 158, KPMG 127, BCG 479.
+  # Doubled to match the window's own doubling; increases per-run retrieval
+  # wall-clock time roughly proportionally.
+  max_articles_per_source: 60
+  max_candidates_per_source: 100
+  browser_fallback: true
+  respect_robots_txt: true
+  respect_rate_limits: true
+  cache_pages: true
+
+ranking:
+  relevance:
+    ai_relevance: 0.30
+    financial_services_relevance: 0.25
+    strategic_significance: 0.20
+    recency: 0.15
+    novelty: 0.10
+
+  confidence:
+    primary_source_confirmation: 0.35
+    multiple_source_corroboration: 0.25
+    publication_date_certainty: 0.15
+    entity_extraction_confidence: 0.10
+    event_classification_confidence: 0.10
+    content_completeness: 0.05
+
+deduplication:
+  enabled: true
+  similarity_threshold: 0.85
+  cluster_related_events: true
+
+agents:
+  # `current_top_k` is a CURRENT-mode-only budget override (Part B3):
+  # Morning/Evening always use `top_k` unchanged. CURRENT's bounded,
+  # per-agent budget is sized so the total (10+8+8+6+4=36 LLM calls, up
+  # from top_k=5 x 5 agents = 25) stays practical on CPU-only qwen2.5:3b
+  # while giving FinancialNewsAgent -- the agent now carrying Reuters/FT/
+  # Bloomberg/CNBC/WSJ/etc. as first-class sources -- the largest share.
+  peer:
+    enabled: true
+    top_k: 5
+    current_top_k: 8
+
+  ai_product:
+    enabled: true
+    top_k: 5
+    current_top_k: 8
+
+  startup:
+    enabled: true
+    top_k: 5
+    current_top_k: 4
+
+  analyst:
+    enabled: true
+    top_k: 5
+    current_top_k: 6
+
+  financial_news:
+    enabled: true
+    top_k: 5
+    current_top_k: 10
+
+  report:
+    enabled: true
+
+# CURRENT-only bounded LLM funnel (see pipeline.nodes's CURRENT-mode
+# agent_analysis): a hard, source-count-independent cap on total Ollama
+# calls per CURRENT run -- replaces each specialist agent independently
+# LLM-analyzing every one of its routed candidates (which scaled with the
+# number of discovered articles and made CURRENT runs take hours on a
+# CPU-only machine). Never applied to Morning/Evening.
+current_llm:
+  # Triage performance fix (smaller batches of a cheaper-to-generate
+  # schema finish well inside the timeout; batch_size*max_triage_batches
+  # was the same 24-candidate bound as before: 3*8=24, was 8*3=24).
+  #
+  # Triage-sample-vs-pool-size fix (2026-10-15, manager-reported coverage
+  # gap -- CNBC sitemap scavenging + Yahoo Finance forced-browser-render +
+  # TradingView all added real discovery volume): the 24-candidate triage
+  # sample was sized when `candidates_after_deterministic_gate` was
+  # typically 32-48, so it covered 50-75% of the qualifying pool per run.
+  # After the above discovery fixes, that pool is routinely 150+ (run
+  # 6627f19b41c3382b: 153), so the same fixed 24 slots only sample ~16% of
+  # it -- real, in-window, relevant candidates (confirmed case: NatWest's
+  # "improves AI speech recognition ... with NVIDIA Nemotron", published
+  # Oct 14) now never even reach triage (`pending_triage_budget`), which
+  # also makes them invisible on Tier B (Tier B deliberately excludes
+  # never-triaged candidates -- see `storage.repositories.backlog.
+  # list_pending_for_run` -- since presenting an unscreened article as
+  # "awaiting analysis" would falsely imply it's already known relevant).
+  # Tripling to 24*3=72 (triage_batch_size unchanged -- it is the cheap,
+  # schema-light step, never the CPU-bound deep-analysis one) restores
+  # roughly the original 50% coverage ratio against the new, larger pool
+  # without touching `max_deep_analysis` below, which stays at the
+  # conservative value this machine's CPU inference can sustain.
+  triage_batch_size: 3
+  max_triage_batches: 24
+  # Deep-analysis forensic benchmark (CPU-only qwen2.5:3b, no GPU:
+  # `size_vram: 0`): structured-output generation measured at ~7.5-7.8
+  # tokens/sec, vs. ~16.3 tok/s free-form -- grammar-constrained decoding
+  # roughly halves throughput. The real production AgentAssessment prompt
+  # for one candidate measured 39.5-60.6s across 3 identical calls even
+  # BEFORE the compaction below. 8 sequential deep-analysis calls per run
+  # (max concurrency is 1 -- see `_run_current_deep_analysis`) was
+  # therefore an 8x90s=720s worst-case tail; 4 is the conservative budget
+  # this machine's CPU inference can sustain reliably within the timeout,
+  # selected domain-fairly (`_select_deep_analysis_winners`) rather than
+  # simply taking the 4 globally-strongest candidates.
+  max_deep_analysis: 4
+  triage_timeout_seconds: 90
+  # 140s, not 100s and not 180s: re-benchmarked against real local
+  # qwen2.5:3b (2026-10-12, high-recall reliability fix) after the 100s
+  # value above was measured to produce REAL timeouts. A cold-start
+  # AnalystAgent call (the heaviest schema -- the extra `analyst_findings`
+  # block; first call to use that system prompt since the model was last
+  # unloaded) measured 98.98s wall time -- inside the 100s timeout by
+  # under 1.2%, and TWO of five cold specialist calls in an earlier
+  # benchmark pass (analyst, financial_news) genuinely exceeded 100s and
+  # were killed by the client-side read timeout. This reproduces the real
+  # CURRENT run `beeb562aba597399` outcome (3 of 4 deep-analysis attempts
+  # timed out) -- the 100s value was not a safe ceiling, it was already
+  # being exceeded. Once a system prompt's prefix is warm in Ollama's own
+  # prompt cache, the SAME specialist's later calls complete in 40-60s;
+  # the 140s ceiling exists for the unavoidable cold case (new system
+  # prompt not yet cached, or model freshly loaded), giving the measured
+  # ~99s cold worst case ~40% margin -- a real ceiling, never indefinite,
+  # and well short of 180s.
+  deep_analysis_timeout_seconds: 140
+  # Candidate backlog (eligible-but-not-yet-processed candidates are
+  # carried forward across runs instead of being lost to this run's
+  # bounded triage/deep-analysis budget above -- see
+  # storage.repositories.backlog). backlog_claim_limit caps how much
+  # pending work ONE run resumes (bounded, never a full-backlog drain);
+  # backlog_max_attempts caps how many times a timing-out/failing
+  # candidate is retried before it becomes an inspectable terminal
+  # rejection instead of pending forever; backlog_retention_days is how
+  # long a completed/rejected row is kept before it's eligible for cleanup
+  # (pending rows are never removed by age).
+  backlog_claim_limit: 8
+  backlog_max_attempts: 5
+  backlog_retention_days: 14
+  # Two-tier CURRENT digest: max characters of already-retrieved article
+  # text shown verbatim in a Tier B ("awaiting specialist analysis") card.
+  # Never an LLM call -- plain text truncation of existing Evidence/Article
+  # content.
+  tier_b_excerpt_chars: 550
+
+report:
+  include_relevance_score: true
+  include_confidence_score: true
+  include_source_evidence: true
+  require_source_for_claim: true
+  include_nomura_opportunity: true
+
+storage:
+  database: sqlite
+  database_path: data/research.db
+
+# Email delivery (automatic CURRENT/Morning/Evening digest delivery + manual
+# newsletter sends). The SMTP password/app-password is NEVER configured
+# here -- it is read only from the SMTP_PASSWORD environment variable (see
+# config/loader.py::load_smtp_password). Leaving `enabled: false` (or
+# leaving smtp_host/sender_address empty) keeps delivery safely disabled;
+# the rest of the application is unaffected either way.
+email:
+  enabled: false
+  smtp_host: ""
+  smtp_port: 587
+  smtp_use_tls: true
+  smtp_username: ""
+  sender_address: ""
+  default_recipient: ghosalmohor@gmail.com

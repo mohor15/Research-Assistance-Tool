@@ -1,0 +1,119 @@
+ai_topics:
+
+  core:
+    - artificial intelligence
+    - generative AI
+    - GenAI
+    - machine learning
+    - large language models
+    - LLM
+    - AI agents
+    - agentic AI
+    - AI assistants
+    - AI automation
+
+  models:
+    - foundation models
+    - multimodal models
+    - reasoning models
+    - language models
+    - model release
+    - model training
+    - model architecture
+
+  infrastructure:
+    - AI infrastructure
+    - inference
+    - AI chips
+    - GPUs
+    - AI compute
+    - AI cloud
+    - AI platform
+    - model serving
+
+  enterprise:
+    - enterprise AI
+    - AI transformation
+    - AI deployment
+    - AI productivity
+    - AI automation
+    - AI copilots
+    - AI workforce
+
+  governance:
+    - AI governance
+    - responsible AI
+    - AI safety
+    - AI security
+    - AI regulation
+    - AI compliance
+
+
+financial_services:
+
+  core:
+    - banking
+    - financial services
+    - financial technology
+    - fintech
+
+  markets:
+    - trading
+    - capital markets
+    - investment banking
+    - markets
+    - securities
+    - derivatives
+
+  wealth:
+    - wealth management
+    - asset management
+    - portfolio management
+    - investment research
+
+  risk:
+    - risk management
+    - credit risk
+    - market risk
+    - operational risk
+    - fraud
+    - compliance
+
+  operations:
+    - financial operations
+    - back office
+    - middle office
+    - settlement
+    - payments
+    - lending
+
+
+event_types:
+  - product_launch
+  - partnership
+  - acquisition
+  - investment
+  - funding
+  - IPO
+  - strategic_initiative
+  - research
+  - model_release
+  - platform_release
+  - infrastructure
+  - regulatory_development
+  - enterprise_deal
+  - hiring
+
+
+strategic_themes:
+  - AI adoption
+  - AI economics
+  - AI productivity
+  - AI operating model
+  - AI transformation
+  - agentic workflows
+  - enterprise AI
+  - AI infrastructure
+  - AI governance
+  - AI investment
+  - AI competition

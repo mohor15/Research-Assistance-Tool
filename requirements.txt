@@ -1,0 +1,56 @@
+# Configuration
+pydantic>=2.6,<3
+PyYAML>=6.0,<7
+python-dotenv>=1.0,<2
+
+# HTTP (retrieval, later the Ollama client)
+requests>=2.31,<3
+httpx>=0.27,<1
+
+# Makes requests/ssl validate against the OS trust store, not just
+# certifi's bundle -- see research_assistant/__init__.py for why.
+truststore>=0.9,<1
+
+# Retrieval: feed parsing, article extraction, date parsing
+# feedparser and trafilatura are used when installed and the retrieval
+# engine degrades gracefully (stdlib XML parser / BeautifulSoup fallback)
+# when they are not — see README "Optional retrieval dependencies".
+feedparser>=6.0,<7
+trafilatura>=1.8,<2
+beautifulsoup4>=4.12,<5
+lxml>=5.0,<6
+python-dateutil>=2.9,<3
+
+# Browser fallback (optional; see README "Optional retrieval dependencies")
+playwright>=1.42,<2
+
+# Targeted FT interactive-search discovery only (optional; see
+# retrieval/ft_search.py). Never used for any other source.
+crawl4ai>=0.9,<1
+
+# Orchestration (Phase 6): sequences the existing services as graph nodes,
+# does not reimplement any of their logic
+langgraph>=0.2,<2
+
+# Persistence + dashboard (Phase 7). SQLite access itself uses only the
+# stdlib `sqlite3` module (no ORM). Streamlit could not be installed in
+# this sandboxed environment (no outbound network access, same limitation
+# as feedparser/trafilatura/playwright in earlier phases) — see README.
+streamlit>=1.30,<2
+
+# Scheduling (Phase 8): 08:00/20:00 Asia/Kolkata morning/evening digest
+# runs. Also could not be installed in this sandboxed environment (same
+# no-network limitation) — `scheduling.jobs` has no dependency on it and
+# is fully tested regardless; only `scheduling.scheduler` needs it.
+apscheduler>=3.10,<4
+
+# Newsletter PDF download (Section 3): pure-Python PDF generation from the
+# already-generated newsletter Markdown -- no system/native dependencies
+# (unlike e.g. WeasyPrint), consistent with this project's preference for
+# optional dependencies that degrade gracefully rather than requiring OS
+# packages. Never calls an LLM or triggers a new scan -- see
+# `reporting/newsletter_pdf.py`.
+reportlab>=4.0,<5
+
+# Testing
+pytest>=8.0,<10
